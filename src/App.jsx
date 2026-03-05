@@ -4,6 +4,7 @@ import { useTheme } from './lib/theme.jsx'
 import { PlayerBases } from './components/PlayerBases'
 import { BannedPlayers } from './components/BannedPlayers'
 import { Dashboard } from './components/Dashboard'
+import { Todos } from './components/Todos'
 import { PasswordGate, getPasswordUnlocked } from './components/PasswordGate'
 import './App.css'
 
@@ -11,6 +12,7 @@ const TABS = [
   { id: 'dashboard', label: 'Tableau de bord' },
   { id: 'bases', label: 'Bases joueurs' },
   { id: 'bans', label: 'Joueurs bannis' },
+  { id: 'todos', label: 'À faire' },
 ]
 
 const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD || ''
@@ -86,6 +88,7 @@ function App() {
         {tab === 'dashboard' && <Dashboard />}
         {tab === 'bases' && <PlayerBases />}
         {tab === 'bans' && <BannedPlayers />}
+        {tab === 'todos' && <Todos />}
       </main>
     </div>
   )
