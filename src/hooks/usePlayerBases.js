@@ -27,6 +27,7 @@ export function usePlayerBases() {
       const fetchData = async (isRetry = false) => {
         if (!isRetry) setLoading(true)
         const { data, error: e } = await supabase.from('player_bases').select('*').order('updated_at', { ascending: false })
+        if (import.meta.env.DEV) console.log('[CentralIEP] player_bases:', { count: (data || []).length, error: e?.message || null, retry: isRetry })
         if (e) setError(e.message)
         else setList(data || [])
         setLoading(false)

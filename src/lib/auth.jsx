@@ -47,9 +47,13 @@ export function AuthProvider({ children }) {
       }, 3000)
       try {
         const { data: { session } } = await supabase.auth.getSession()
+        if (import.meta.env.DEV) {
+          console.log('[CentralIEP] Auth init:', { hasSession: !!session, userId: session?.user?.id, email: session?.user?.email })
+        }
         if (session?.user) {
           setUser(session.user)
           const p = await fetchProfile(session.user.id)
+          if (import.meta.env.DEV) console.log('[CentralIEP] Profile:', p ? { role: p.role } : 'null')
           setProfile(p)
           setLoading(false)
           // Laisser le client Supabase appliquer la session avant les premiers fetches

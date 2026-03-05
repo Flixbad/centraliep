@@ -30,6 +30,10 @@ function App() {
 
   const showAuthScreen = hasSupabase() && !user && !authLoading
 
+  if (import.meta.env.DEV) {
+    console.log('[CentralIEP] App state:', { hasSupabase: hasSupabase(), user: !!user, authLoading, sessionReady, showAuthScreen })
+  }
+
   if ((authLoading && hasSupabase()) || (user && !sessionReady)) {
     return (
       <div className="app">

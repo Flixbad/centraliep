@@ -8,3 +8,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
   : null
 
 export const hasSupabase = () => !!supabase
+
+if (import.meta.env.DEV) {
+  console.log('[CentralIEP] Supabase:', supabase ? 'client OK' : 'désactivé (VITE_SUPABASE_* manquants)')
+}

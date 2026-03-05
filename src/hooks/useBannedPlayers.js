@@ -27,6 +27,7 @@ export function useBannedPlayers() {
       const fetchData = async (isRetry = false) => {
         if (!isRetry) setLoading(true)
         const { data, error: e } = await supabase.from('banned_players').select('*').order('date_ban', { ascending: false })
+        if (import.meta.env.DEV) console.log('[CentralIEP] banned_players:', { count: (data || []).length, error: e?.message || null, retry: isRetry })
         if (e) setError(e.message)
         else setList(data || [])
         setLoading(false)
