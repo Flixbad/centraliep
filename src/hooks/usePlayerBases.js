@@ -31,6 +31,10 @@ export function usePlayerBases() {
         else setList(data || [])
         setLoading(false)
       }
+      const refetchInBackground = async () => {
+        const { data, error: e } = await supabase.from('player_bases').select('*').order('updated_at', { ascending: false })
+        if (!e && data) setList(data)
+      }
       fetchData()
 
       const channel = supabase
@@ -40,8 +44,14 @@ export function usePlayerBases() {
         })
         .subscribe()
 
+      const onVisible = () => {
+        if (document.visibilityState === 'visible') refetchInBackground()
+      }
+      document.addEventListener('visibilitychange', onVisible)
+
       return () => {
         supabase.removeChannel(channel)
+        document.removeEventListener('visibilitychange', onVisible)
       }
     } else {
       setList(getFromStorage())

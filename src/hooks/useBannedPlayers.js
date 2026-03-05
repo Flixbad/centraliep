@@ -31,6 +31,10 @@ export function useBannedPlayers() {
         else setList(data || [])
         setLoading(false)
       }
+      const refetchInBackground = async () => {
+        const { data, error: e } = await supabase.from('banned_players').select('*').order('date_ban', { ascending: false })
+        if (!e && data) setList(data)
+      }
       fetchData()
 
       const channel = supabase
@@ -40,8 +44,14 @@ export function useBannedPlayers() {
         })
         .subscribe()
 
+      const onVisible = () => {
+        if (document.visibilityState === 'visible') refetchInBackground()
+      }
+      document.addEventListener('visibilitychange', onVisible)
+
       return () => {
         supabase.removeChannel(channel)
+        document.removeEventListener('visibilitychange', onVisible)
       }
     } else {
       setList(getFromStorage())

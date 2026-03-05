@@ -2,6 +2,23 @@
   command = "npm run build"
   publish = "dist"
 
+# Éviter que le navigateur garde une vieille version en cache (fix reload = données vides)
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
