@@ -21,6 +21,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [sessionReady, setSessionReady] = useState(false)
 
   const fetchProfile = async (userId) => {
     if (!hasSupabase() || !userId) return null
@@ -35,28 +36,38 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!hasSupabase()) {
       setLoading(false)
+      setSessionReady(true)
       return
     }
 
     const init = async () => {
-      const timeout = setTimeout(() => setLoading(false), 3000)
+      const timeout = setTimeout(() => {
+        setLoading(false)
+        setSessionReady(true)
+      }, 3000)
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
           setUser(session.user)
           const p = await fetchProfile(session.user.id)
           setProfile(p)
+          setLoading(false)
+          // Laisser le client Supabase appliquer la session avant les premiers fetches
+          setTimeout(() => setSessionReady(true), 200)
         } else {
           setUser(null)
           setProfile(null)
+          setSessionReady(true)
+          setLoading(false)
         }
       } catch (err) {
         console.error('Central IEP – Erreur auth:', err)
         setUser(null)
         setProfile(null)
+        setSessionReady(true)
+        setLoading(false)
       } finally {
         clearTimeout(timeout)
-        setLoading(false)
       }
     }
 
@@ -119,6 +130,7 @@ export function AuthProvider({ children }) {
     user,
     profile,
     loading,
+    sessionReady,
     signIn,
     signUp,
     signOut,

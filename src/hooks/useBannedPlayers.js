@@ -24,18 +24,25 @@ export function useBannedPlayers() {
 
   useEffect(() => {
     if (hasSupabase()) {
-      const fetchData = async () => {
-        setLoading(true)
+      const fetchData = async (isRetry = false) => {
+        if (!isRetry) setLoading(true)
         const { data, error: e } = await supabase.from('banned_players').select('*').order('date_ban', { ascending: false })
         if (e) setError(e.message)
         else setList(data || [])
         setLoading(false)
+        return { data: data || [], error: e }
       }
       const refetchInBackground = async () => {
         const { data, error: e } = await supabase.from('banned_players').select('*').order('date_ban', { ascending: false })
         if (!e && data) setList(data)
       }
-      fetchData()
+
+      let retryId
+      fetchData().then(({ data }) => {
+        if (data && data.length === 0) {
+          retryId = setTimeout(() => fetchData(true), 1200)
+        }
+      })
 
       const channel = supabase
         .channel('banned_players_changes')
@@ -50,6 +57,7 @@ export function useBannedPlayers() {
       document.addEventListener('visibilitychange', onVisible)
 
       return () => {
+        if (retryId) clearTimeout(retryId)
         supabase.removeChannel(channel)
         document.removeEventListener('visibilitychange', onVisible)
       }

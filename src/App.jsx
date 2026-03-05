@@ -18,7 +18,7 @@ const TABS_BASE = [
 ]
 
 function App() {
-  const { user, loading: authLoading, canManageMembers } = useAuth()
+  const { user, loading: authLoading, sessionReady, canManageMembers } = useAuth()
   const { theme, setTheme } = useTheme()
   const [tab, setTab] = useState('dashboard')
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -30,7 +30,7 @@ function App() {
 
   const showAuthScreen = hasSupabase() && !user && !authLoading
 
-  if (authLoading && hasSupabase()) {
+  if ((authLoading && hasSupabase()) || (user && !sessionReady)) {
     return (
       <div className="app">
         <div className="app-loading">Chargement…</div>
