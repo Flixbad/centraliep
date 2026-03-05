@@ -6,10 +6,8 @@ Gestionnaire d’informations pour **bases joueurs** et **joueurs bannis**, avec
 
 - **Bases joueurs** : Membre, nom de groupe, coordonnées, statut, région, type, dernier contact, notes. Ajout, modification, suppression (avec confirmation).
 - **Joueurs bannis** : Pseudo, Steam ID, raison, type d’infraction, notes supplémentaires. Ajout, modification, suppression (avec confirmation).
-- **Connexion (Supabase Auth)** : pour accéder à l’app avec Supabase, il faut créer un compte. Rôles : Fondateur, SuperAdmin, Dev, Admin, Modérateur, Helpeur. Les **Helpeur** peuvent tout faire sauf supprimer.
+- **Protection par mot de passe** (optionnelle) : un mot de passe unique pour accéder au site (voir ci‑dessous).
 - **Confirmation avant suppression** : « Êtes-vous sûr ? » pour éviter les suppressions accidentelles.
-- **Gestion des membres** : les rôles **Fondateur**, **SuperAdmin** et **Dev** voient l’onglet « Gestion des membres » et peuvent attribuer les rôles aux autres.
-- **Menu utilisateur** (icône en haut à droite) : Paramètres du compte, Gestion des membres (si autorisé), Déconnexion.
 
 ## Démarrage rapide
 
@@ -36,25 +34,23 @@ VITE_SUPABASE_ANON_KEY=ta_cle_anon
 
 5. Redémarre le serveur (`npm run dev`). La bannière verte confirme la sync.
 
-### Activer l’authentification et les rôles
+Sur Netlify, ajoute les mêmes variables dans **Site settings → Environment variables** pour que la version déployée soit aussi synchronisée.
 
-1. Dans le **SQL Editor** Supabase, exécute le script **`supabase-auth-schema.sql`** (après le schéma principal). Cela crée la table `profiles`, les rôles et les politiques RLS (lecture/écriture réservées aux utilisateurs connectés, suppression interdite pour le rôle Helpeur).
-2. Dans Supabase : **Authentication → Providers** : active « Email » si besoin.
-3. Chaque nouvel inscrit reçoit par défaut le rôle **Helpeur** (peut ajouter/modifier, pas supprimer). Pour donner le rôle **Fondateur** au premier compte, exécute dans le SQL Editor :
+### Protection par mot de passe (optionnel)
 
-```sql
-update public.profiles set role = 'Fondateur' where email = 'ton@email.com';
+Pour demander un mot de passe avant d’accéder au site, ajoute dans ton `.env` (et dans les variables d’environnement Netlify si déployé) :
+
+```env
+VITE_APP_PASSWORD=ton_mot_de_passe_secret
 ```
 
-Les rôles **Fondateur**, **SuperAdmin** et **Dev** ont accès à l’onglet « Gestion des membres » pour modifier les rôles des autres.
-
-Sur Netlify, ajoute les mêmes variables dans **Site settings → Environment variables** pour que la version déployée soit aussi synchronisée.
+Si `VITE_APP_PASSWORD` n’est pas défini ou est vide, le site est accessible sans mot de passe. Une fois le bon mot de passe saisi, l’accès reste ouvert pour la session (onglet) en cours.
 
 ## Déploiement Netlify
 
 - Build command : `npm run build`
 - Publish directory : `dist`
-- Les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` doivent être définies dans les variables d’environnement du site.
+- Les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` doivent être définies dans les variables d’environnement du site. Optionnel : `VITE_APP_PASSWORD` pour protéger l’accès au site.
 
 Le fichier `netlify.toml` est déjà configuré pour un déploiement par défaut.
 

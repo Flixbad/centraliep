@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useBannedPlayers, INFRACTION_OPTIONS } from '../hooks/useBannedPlayers'
-import { useAuth } from '../lib/auth'
 import { downloadCsv } from '../lib/exportCsv'
 import { ConfirmDialog } from './ConfirmDialog'
 import styles from './Tables.module.css'
@@ -23,7 +22,6 @@ function formatDate(d) {
 
 export function BannedPlayers() {
   const { list, loading, error, add, update, remove } = useBannedPlayers()
-  const { canDelete } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null })
   const [editing, setEditing] = useState(null)
@@ -161,9 +159,7 @@ export function BannedPlayers() {
                       <td className={styles.notesCell}>{row.notes_supp || '—'}</td>
                       <td className={styles.actions}>
                         <button type="button" className={styles.btnSm} onClick={() => openEdit(row)}>Modifier</button>
-                        {canDelete() && (
-                          <button type="button" className={styles.btnDanger} onClick={() => setConfirmDelete({ open: true, id: row.id })}>Suppr.</button>
-                        )}
+                        <button type="button" className={styles.btnDanger} onClick={() => setConfirmDelete({ open: true, id: row.id })}>Suppr.</button>
                       </td>
                     </tr>
                   ))
@@ -189,9 +185,7 @@ export function BannedPlayers() {
                   {row.notes_supp && <div className={styles.cardNotes}>{row.notes_supp}</div>}
                   <div className={styles.cardActions}>
                     <button type="button" className={styles.btnSm} onClick={() => openEdit(row)}>Modifier</button>
-                    {canDelete() && (
-                      <button type="button" className={styles.btnDanger} onClick={() => setConfirmDelete({ open: true, id: row.id })}>Suppr.</button>
-                    )}
+                    <button type="button" className={styles.btnDanger} onClick={() => setConfirmDelete({ open: true, id: row.id })}>Suppr.</button>
                   </div>
                 </div>
               ))

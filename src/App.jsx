@@ -1,55 +1,33 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { hasSupabase } from './lib/supabase'
-import { useAuth } from './lib/auth.jsx'
 import { useTheme } from './lib/theme.jsx'
 import { PlayerBases } from './components/PlayerBases'
 import { BannedPlayers } from './components/BannedPlayers'
 import { Dashboard } from './components/Dashboard'
-import { UserMenu } from './components/UserMenu'
-import { MemberManagement } from './components/MemberManagement'
-import { AccountSettings } from './components/AccountSettings'
-import { AuthScreen } from './components/AuthScreen'
+import { PasswordGate, getPasswordUnlocked } from './components/PasswordGate'
 import './App.css'
 
-const TABS_BASE = [
+const TABS = [
   { id: 'dashboard', label: 'Tableau de bord' },
   { id: 'bases', label: 'Bases joueurs' },
   { id: 'bans', label: 'Joueurs bannis' },
 ]
 
+const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD || ''
+
 function App() {
-  const { user, loading: authLoading, sessionReady, canManageMembers } = useAuth()
   const { theme, setTheme } = useTheme()
   const [tab, setTab] = useState('dashboard')
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const hasPasswordProtection = APP_PASSWORD.length > 0
+  const initialUnlocked = useMemo(() => !hasPasswordProtection || getPasswordUnlocked(), [hasPasswordProtection])
+  const [unlocked, setUnlocked] = useState(initialUnlocked)
 
-  const tabs = [...TABS_BASE]
-  if (canManageMembers()) {
-    tabs.push({ id: 'members', label: 'Gestion des membres' })
-  }
-
-  const showAuthScreen = hasSupabase() && !user && !authLoading
-
-  if (import.meta.env.DEV) {
-    console.log('[CentralIEP] App state:', { hasSupabase: hasSupabase(), user: !!user, authLoading, sessionReady, showAuthScreen })
-  }
-
-  if ((authLoading && hasSupabase()) || (user && !sessionReady)) {
+  if (hasPasswordProtection && !unlocked) {
     return (
-      <div className="app">
-        <div className="app-loading">Chargement…</div>
-      </div>
-    )
-  }
-
-  if (showAuthScreen) {
-    return (
-      <div className="app">
-        <header className="app-header app-header-minimal">
-          <h1>Central IEP</h1>
-        </header>
-        <AuthScreen />
-      </div>
+      <PasswordGate
+        expectedPassword={APP_PASSWORD}
+        onSuccess={() => setUnlocked(true)}
+      />
     )
   }
 
@@ -72,12 +50,6 @@ function App() {
                 <option value="dark">Sombre</option>
               </select>
             </div>
-            {user && (
-              <UserMenu
-                onOpenSettings={() => setSettingsOpen(true)}
-                onOpenMembers={() => setTab('members')}
-              />
-            )}
           </div>
         </div>
         <p className="tagline">Gestion des bases et des joueurs bannis</p>
@@ -85,19 +57,20 @@ function App() {
 
       {!hasSupabase() && (
         <div className="banner banner-info">
-          <strong>Mode local.</strong> Les données sont enregistrées sur cet appareil uniquement.
-          Configure Supabase + Auth pour la connexion et la synchronisation (voir README).
+          <strong>Supabase non configuré.</strong> Les données restent sur cet appareil uniquement.
+          <br />
+          Définissez <code>VITE_SUPABASE_URL</code> et <code>VITE_SUPABASE_ANON_KEY</code> dans un fichier <code>.env</code> à la racine du projet (en local), ou dans les variables d’environnement du site Netlify, puis redémarrez le serveur de dev ou redéployez.
         </div>
       )}
 
-      {hasSupabase() && user && (
+      {hasSupabase() && (
         <div className="banner banner-sync">
-          Connecté — les modifications sont synchronisées en temps réel.
+          Les modifications sont synchronisées en temps réel.
         </div>
       )}
 
       <nav className="tabs">
-        {tabs.map((t) => (
+        {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
@@ -113,10 +86,7 @@ function App() {
         {tab === 'dashboard' && <Dashboard />}
         {tab === 'bases' && <PlayerBases />}
         {tab === 'bans' && <BannedPlayers />}
-        {tab === 'members' && <MemberManagement />}
       </main>
-
-      <AccountSettings open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
 }
